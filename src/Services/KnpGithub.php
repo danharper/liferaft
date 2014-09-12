@@ -1,5 +1,6 @@
 <?php namespace Laravel\Liferaft\Services;
 
+use Github\ResultPager;
 use Illuminate\Events\Dispatcher;
 use Github\Client as GithubClient;
 use Illuminate\Support\Collection;
@@ -45,14 +46,49 @@ class KnpGithub implements GithubContract {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function createAuthorization($name, $scopes, $tfaCode = null)
+	public function findAuthorization($name, $twoFactorAuthCode = null)
+	{
+		try
+		{
+			if ($twoFactorAuthCode)
+			{
+				$this->client->setHeaders(['X-GitHub-OTP' => $twoFactorAuthCode ]);
+			}
+
+			return $this->findMatchingAuthorizationToken($name);
+		}
+		catch (TwoFactorAuthenticationRequiredException $e)
+		{
+			throw new \InvalidArgumentException('Incorrect or missing Two-Factor Auth Code.');
+		}
+	}
+
+	protected function findMatchingAuthorizationToken($name)
+	{
+		$paginator = new ResultPager($this->client);
+
+		$authorizations = $paginator->fetchAll($this->client->api('authorizations'), 'all');
+
+		foreach ($authorizations as $auth)
+		{
+			if (isset($auth['app']['name']) && strpos($auth['app']['name'], $name) === 0)
+			{
+				return $auth['token'];
+			}
+		}
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function createAuthorization($name, $scopes, $twoFactorAuthCode = null)
 	{
 		try
 		{
 			$response = $this->client->api('authorizations')->create([
 				'note' => $name,
 				'scopes' => $scopes,
-			], $tfaCode);
+			], $twoFactorAuthCode);
 
 			return $response['token'];
 		}

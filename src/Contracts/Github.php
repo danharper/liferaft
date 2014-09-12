@@ -11,14 +11,22 @@ interface Github {
 	public function authenticateWithPassword($username, $password);
 
 	/**
-	 * Create an application on Github
+	 * Find an application on Github, returning the token if found
+	 * @param  string $name
+	 * @param  string|null $twoFactorAuthCode
+	 * @return string|null
+	 */
+	public function findAuthorization($name, $twoFactorAuthCode = null);
+
+	/**
+	 * Create an application on Github, returning the token
 	 * @param  string $name
 	 * @param  string[] $scopes
-	 * @param  string|null $tfaCode
+	 * @param  string|null $twoFactorAuthCode
 	 * @throws \InvalidArgumentException
 	 * @return string
 	 */
-	public function createAuthorization($name, $scopes, $tfaCode = null);
+	public function createAuthorization($name, $scopes, $twoFactorAuthCode = null);
 
 	/**
 	 * Get the authenticated user's usernmae.
