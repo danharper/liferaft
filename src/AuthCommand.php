@@ -70,27 +70,19 @@ class AuthCommand extends BaseCommand {
 		}
 		else
 		{
-			$username = $this->ask('GitHub Username:');
-			$password = $this->secret('GitHub Password:');
-
-			try
-			{
-				$this->action->execute($username, $password ?: '');
-			}
-			catch (\InvalidArgumentException $e)
-			{
-				$this->comment('You have Two-Factor Authentication enabled.');
-				$this->comment('Please enter the code provided to you via SMS or your GitHub mobile app.');
-
-				$tfaCode = $this->ask('GitHub Two-Factor Auth Code:');
-
-				$this->action->execute($username, $password, $tfaCode);
-			}
+			$this->authWithUsername();
 		}
 	}
 
+	/**
+	 * Authenticate with GitHub, create an application and use that token
+	 * 
+	 * @return void
+	 */
 	protected function authWithUsername()
 	{
+		$this->comment('Your credentials will be exchanged for a token, your password will NOT be stored.');
+
 		$username = $this->ask('GitHub Username:');
 		$password = $this->secret('GitHub Password:') ?: '';
 
@@ -100,12 +92,17 @@ class AuthCommand extends BaseCommand {
 		}
 		catch (\InvalidArgumentException $e)
 		{
-			$tfaCode = $this->promptTwoFactorAuthCode();
+			$twoFactorAuthCode = $this->promptTwoFactorAuthCode();
 
-			$this->action->execute($username, $password, $tfaCode);
+			$this->action->execute($username, $password, $twoFactorAuthCode);
 		}
 	}
 
+	/**
+	 * Prompt for a Two-Factor Auth code
+	 * 
+	 * @return string
+	 */
 	protected function promptTwoFactorAuthCode()
 	{
 		$this->comment('You have Two-Factor Authentication enabled.');
