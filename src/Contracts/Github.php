@@ -3,6 +3,24 @@
 interface Github {
 
 	/**
+	 * Authenticate with password
+	 * @param  string $username
+	 * @param  string $password
+	 * @return void
+	 */
+	public function authenticateWithPassword($username, $password);
+
+	/**
+	 * Create an application on Github
+	 * @param  string $name
+	 * @param  string[] $scopes
+	 * @param  string|null $tfaCode
+	 * @throws \InvalidArgumentException
+	 * @return string
+	 */
+	public function createAuthorization($name, $scopes, $tfaCode = null);
+
+	/**
 	 * Get the authenticated user's usernmae.
 	 *
 	 * @return string

@@ -4,6 +4,7 @@ use Illuminate\Events\Dispatcher;
 use Github\Client as GithubClient;
 use Illuminate\Support\Collection;
 use Laravel\Liferaft\Contracts\Github as GithubContract;
+use Github\Exception\TwoFactorAuthenticationRequiredException;
 
 class KnpGithub implements GithubContract {
 
@@ -31,6 +32,34 @@ class KnpGithub implements GithubContract {
 	{
 		$this->event = $event;
 		$this->client = $client;
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function authenticateWithPassword($username, $password)
+	{
+		$this->client->authenticate($username, $password, GithubClient::AUTH_HTTP_PASSWORD);
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function createAuthorization($name, $scopes, $tfaCode = null)
+	{
+		try
+		{
+			$response = $this->client->api('authorizations')->create([
+				'note' => $name,
+				'scopes' => $scopes,
+			], $tfaCode);
+
+			return $response['token'];
+		}
+		catch (TwoFactorAuthenticationRequiredException $e)
+		{
+			throw new \InvalidArgumentException('Incorrect or missing Two-Factor Auth Code.');
+		}
 	}
 
 	/**
