@@ -1,7 +1,7 @@
 <?php namespace Laravel\Liferaft;
 
 use Laravel\Liferaft\Actions\AuthLiferaft;
-use Laravel\Liferaft\Actions\ActionInterface;
+use Laravel\Liferaft\Contracts\Action;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -15,7 +15,7 @@ class AuthCommand extends BaseCommand {
 	/**
 	 * The action instance.
 	 *
-	 * @var ActionInterface
+	 * @var Action
 	 */
 	protected $action;
 
